@@ -16,8 +16,8 @@
  *
  ******************************************************************************/
 
-import java.util.ArrayList;
-// import edu.princeton.cs.algs4.In;
+// import java.util.ArrayList;
+import edu.princeton.cs.algs4.Queue;
 // import edu.princeton.cs.algs4.StdOut;
 
 public class Board {
@@ -127,14 +127,14 @@ public class Board {
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        ArrayList<Board> neighbors = new ArrayList<Board>();
+        Queue<Board> neighbors = new Queue<Board>();
         int x = getX(indexOfZero);
         int y = getY(indexOfZero);
 
-        if (x > 0)     neighbors.add(movedZero(y * n + x - 1));
-        if (x < n - 1) neighbors.add(movedZero(y * n + x + 1));
-        if (y > 0)     neighbors.add(movedZero((y - 1) * n + x));
-        if (y < n - 1) neighbors.add(movedZero((y + 1) * n + x));
+        if (x > 0)     neighbors.enqueue(movedZero(y * n + x - 1));
+        if (x < n - 1) neighbors.enqueue(movedZero(y * n + x + 1));
+        if (y > 0)     neighbors.enqueue(movedZero((y - 1) * n + x));
+        if (y < n - 1) neighbors.enqueue(movedZero((y + 1) * n + x));
 
         return neighbors;
     }

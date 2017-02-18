@@ -21,16 +21,9 @@ public class Solver {
     private class SearchNode implements Comparable<SearchNode> {
         private int moves;
         private int priority;
-        private boolean isTwin = false;
+        private boolean isTwin;
         private Board board;
         private SearchNode parent;
-
-        public SearchNode(Board board, SearchNode parent) {
-            this.board  = board;
-            this.parent = parent;
-            this.moves  = parent == null ? 0 : parent.moves + 1;
-            priority = board.manhattan() + moves;
-        }
 
         public SearchNode(Board board, SearchNode parent, boolean isTwin) {
             this.board  = board;
@@ -44,14 +37,10 @@ public class Solver {
         //     StdOut.println(" - moves: " + moves + ", manhattan: "+ board.manhattan() + ", priority: " + priority);
         // }
 
-        public SearchNode parent() { return parent; }
-        public int moves() { return moves; }
-        public boolean isTwin() { return isTwin; }
         public boolean isSolved() { return board.isGoal(); }
-        public Board board() { return board; }
-        public Iterable<Board> neighbors() { return board.neighbors(); }
 
         public int compareTo(SearchNode that) {
+
             int pDiff = this.priority - that.priority;
             if (pDiff != 0) return pDiff;
 
@@ -61,7 +50,7 @@ public class Solver {
             return this.board.hamming() - that.board.hamming();
         }
 
-        public String toString() { return board.toString(); }
+        // public String toString() { return board.toString(); }
     }
 
     // find a solution to the initial board (using the A* algorithm)
@@ -70,7 +59,7 @@ public class Solver {
 
         // moves = 0;
         Board prev;
-        SearchNode curr = new SearchNode(initial, null);
+        SearchNode curr = new SearchNode(initial, null, false);
         // SearchNode twin = new SearchNode(initial.twin(), null, true);
         pq.insert(curr);
         pq.insert(new SearchNode(initial.twin(), null, true));
@@ -78,7 +67,7 @@ public class Solver {
         while (!curr.isSolved()) {
             // StdOut.println("~~~~ Step " + moves);
 
-            prev = curr.board();
+            prev = curr.board;
             curr = pq.delMin();
 
             // StdOut.println( " curr: " + curr.board());
@@ -86,14 +75,14 @@ public class Solver {
 
             // ++moves;
 
-            for (Board neighbor: curr.neighbors()) {
+            for (Board neighbor: curr.board.neighbors()) {
                 if (!prev.equals(neighbor)) {
-                    pq.insert(new SearchNode(neighbor, curr, curr.isTwin()));
+                    pq.insert(new SearchNode(neighbor, curr, curr.isTwin));
                 }
             }
         }
 
-        moves = curr.isTwin() ? -1 : curr.moves();
+        moves = curr.isTwin ? -1 : curr.moves;
         result = curr;
 
     }
@@ -112,8 +101,8 @@ public class Solver {
         SearchNode currNode = result;
 
         while (currNode != null) {
-            s.push(currNode.board());
-            currNode = currNode.parent();
+            s.push(currNode.board);
+            currNode = currNode.parent;
         }
 
         return s;
