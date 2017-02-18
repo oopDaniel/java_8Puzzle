@@ -17,8 +17,8 @@
  ******************************************************************************/
 
 import java.util.ArrayList;
-import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.StdOut;
+// import edu.princeton.cs.algs4.In;
+// import edu.princeton.cs.algs4.StdOut;
 
 public class Board {
     private char[] tiles;
@@ -102,40 +102,54 @@ public class Board {
     }
 
     // a board that is obtained by exchanging any pair of blocks
+    // public Board twin() {
+    //     // int[][] blocks = new int[n][n];
+    //     char[] blocks = new char[totalLen];
+    //     int firstIndex = -1, secondIndex = -1;
+    //     char c;
+
+    //     for (int i = 0; i < totalLen; ++i) {
+    //         c = tiles[i];
+    //         boolean isNotZero = i != indexOfZero;
+
+    //         // just convert
+    //         if (secondIndex != -1) {
+    //             // blocks[getY(i)][getX(i)] = Character.getNumericValue(c);
+    //             blocks[i] = c;
+    //         }
+    //         else if (firstIndex > -1 && isNotZero) {
+    //             secondIndex = 0;  // so will always do conversion after then
+    //             char prevC = tiles[firstIndex];
+    //             // blocks[getY(i)][getX(i)] = Character.getNumericValue(prevC);
+    //             // blocks[getY(a)][getX(a)] = Character.getNumericValue(c);
+
+    //             blocks[firstIndex] = c;
+    //             blocks[i] = prevC;
+    //         }
+    //         // original case, begin without '0'
+    //         else if (firstIndex == secondIndex && isNotZero) {
+    //             firstIndex = i;
+    //         }
+    //         // original case, begin with '0'
+    //         else {
+    //             // blocks[0][0] = 0;
+    //             blocks[0] = cZero;
+    //         }
+    //     }
+
+    //     return new Board(blocks);
+    // }
+
     public Board twin() {
-        // int[][] blocks = new int[n][n];
-        char[] blocks = new char[totalLen];
-        int firstIndex = -1, secondIndex = -1;
-        char c;
+        char[] blocks = tiles.clone();
+        int x = 0, y = 1;
 
-        for (int i = 0; i < totalLen; ++i) {
-            c = tiles[i];
-            boolean isNotZero = i != indexOfZero;
+        if      (blocks[x] == cZero) x = y + 1;
+        else if (blocks[y] == cZero) y = y + 1;
 
-            // just convert
-            if (secondIndex != -1) {
-                // blocks[getY(i)][getX(i)] = Character.getNumericValue(c);
-                blocks[i] = c;
-            }
-            else if (firstIndex > -1 && isNotZero) {
-                secondIndex = 0;  // so will always do conversion after then
-                char prevC = tiles[firstIndex];
-                // blocks[getY(i)][getX(i)] = Character.getNumericValue(prevC);
-                // blocks[getY(a)][getX(a)] = Character.getNumericValue(c);
-
-                blocks[firstIndex] = c;
-                blocks[i] = prevC;
-            }
-            // original case, begin without '0'
-            else if (firstIndex == secondIndex && isNotZero) {
-                firstIndex = i;
-            }
-            // original case, begin with '0'
-            else {
-                // blocks[0][0] = 0;
-                blocks[0] = cZero;
-            }
-        }
+        char c = blocks[x];
+        blocks[x] = blocks[y];
+        blocks[y] = c;
 
         return new Board(blocks);
     }
