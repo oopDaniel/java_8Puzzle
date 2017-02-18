@@ -1,10 +1,11 @@
 /******************************************************************************
  *  Compilation:  javac Solver.java
  *  Execution:    java Solver <puzzle04.txt>
- *  Dependencies: Board.java
+ *  Dependencies: Board.java, HashMap
  *
  *  The solution for 8 Puzzle problem
  *
+ *  Use HashMap caching the string result of board to reduce time and space
  *
  ******************************************************************************/
 
@@ -14,58 +15,59 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Stack;
 
+
 public class Solver {
     private int moves;
-    private MinPQ<SearchNode> pq = new MinPQ<SearchNode>();
     private SearchNode result;
-    // private HashMap<String, Integer> manhattanMap = new HashMap<String, Integer>();
+    private MinPQ<SearchNode> pq = new MinPQ<SearchNode>();
+    private HashMap<Integer, Integer> manhattanMap
+        = new HashMap<Integer, Integer>();
 
+    /**
+     * The board with priority, and a flag to ensure if it's a twin
+     */
     private class SearchNode implements Comparable<SearchNode> {
-        private int moves;
+        private short moves;
         private int m;
-        // private int priority;
         private boolean isTwin;
         private Board board;
         private SearchNode parent;
 
+        // Add parent for the trace after resolved
         public SearchNode(Board board, SearchNode parent, boolean isTwin) {
             this.board  = board;
             this.parent = parent;
-            this.moves  = parent == null ? 0 : parent.moves + 1;
+            this.moves  = parent == null ? 0 : (short) (parent.moves + 1);
             this.isTwin = isTwin;
 
-            this.m = board.manhattan();
+            // Better to use other property as the hash key,
+            // but the only available public API is toString()
+            int id = board.toString().hashCode();
 
-            // String id = board.toString();
-            // Integer tmp = manhattanMap.get(id);
-            // if (tmp == null) {
-            //     this.m = board.manhattan();
-            //     manhattanMap.put(id, this.m);
-            // } else {
-            //     this.m = tmp;
-            // }
-            // StdOut.println("this.m: " + this.m);
+            if (manhattanMap.containsKey(id)) {
+                this.m = manhattanMap.get(id);
+            } else {
+                this.m = board.manhattan();
+                manhattanMap.put(id, this.m);
+            }
         }
 
-        public void show() {
-            StdOut.println(" - moves: " + moves + ", manhattan: "+ m + ", priority: " + (moves+m));
-        }
+        /**
+         * Determine the end of searching
+         *
+         * @return whether the board is goal
+         */
+        public boolean hasSolved() { return board.isGoal(); }
 
-        public boolean isSolved() { return board.isGoal(); }
-
+        /**
+         * Compare two SearchNode, the Comparable method
+         * will be used for priority queue
+         *
+         * @return integer of comparing result
+         */
         public int compareTo(SearchNode that) {
-            int thisMH = this.board.manhattan();
+            int thisMH = this.m;
             int thatMH = that.board.manhattan();
-            // , thatMH;
-
-            // String id = that.board.toString();
-            // Integer tmp = manhattanMap.get(id);
-            // if (tmp == null) {
-            //     thatMH = that.board.manhattan();
-            //     manhattanMap.put(id, thatMH);
-            // } else {
-            //     thatMH = tmp;
-            // }
 
             int pDiff = thisMH + this.moves - thatMH - that.moves;
             if (pDiff != 0) return pDiff;
@@ -76,56 +78,59 @@ public class Solver {
             return this.board.hamming() - that.board.hamming();
         }
 
+        // Debugging
+        // public void show() {
+        //     StdOut.println(" - moves: " + moves + ", manhattan: "+ m + ", priority: " + (moves + m));
+        // }
         // public String toString() { return board.toString(); }
     }
 
-    // find a solution to the initial board (using the A* algorithm)
+    /**
+     * Find a solution to the initial board (using the A* algorithm)
+     */
     public Solver(Board initial) {
         if (initial == null) throw new java.lang.NullPointerException();
 
         moves = 0;
-        Board prev;
+
         SearchNode curr = new SearchNode(initial, null, false);
-        // SearchNode twin = new SearchNode(initial.twin(), null, true);
         pq.insert(curr);
         pq.insert(new SearchNode(initial.twin(), null, true));
 
-        while (!curr.isSolved()) {
-            // StdOut.println("~~~~ Step " + moves);
-
-            prev = curr.board;
+        while (!curr.hasSolved()) {
             curr = pq.delMin();
 
-            // StdOut.println( " curr: " + curr.board);
-            // curr.show();
-            // for (SearchNode qq: pq) {
-            //     qq.show();
-            //     // StdOut.println( " qq: " + qq.board);
-            // }
-            // curr.show();
-
-            // ++moves;
-            // if (moves > 25) break;
-
             for (Board neighbor: curr.board.neighbors()) {
-                if (!prev.equals(neighbor)) {
+                // If a neighbor cached already, enqueue will be redundant
+                if (manhattanMap.get(neighbor.toString().hashCode()) == null)
                     pq.insert(new SearchNode(neighbor, curr, curr.isTwin));
-                }
             }
         }
 
-        moves = curr.isTwin ? -1 : curr.moves;
+        moves  = curr.isTwin ? -1 : curr.moves;
         result = curr;
-
     }
 
-    // is the initial board solvable?
+    /**
+     * Will try to solve and determine whether the initial board is solvable
+     *
+     * @return whether the initial board is solvable
+     */
     public boolean isSolvable() { return moves != -1; }
 
-    // min number of moves to solve initial board; -1 if unsolvable
+    /**
+     * Min number of moves to solve initial board
+     *
+     * @return min number of moves to solve; -1 if unsolvable
+     */
     public int moves() { return moves; }
 
-    // sequence of boards in a shortest solution; null if unsolvable
+
+    /**
+     * Sequence of boards in a shortest solution
+     *
+     * @return Sequence of boards in a shortest solution; null if unsolvable
+     */
     public Iterable<Board> solution() {
         if (!isSolvable()) return null;
 
@@ -136,9 +141,9 @@ public class Solver {
             s.push(currNode.board);
             currNode = currNode.parent;
         }
-
         return s;
     }
+
 
     public static void main(String[] args) {
 
@@ -150,8 +155,6 @@ public class Solver {
             for (int j = 0; j < n; j++)
                 blocks[i][j] = in.readInt();
         Board initial = new Board(blocks);
-
-        // int id = initial.toString().hashCode();
 
         // solve the puzzle
         Solver solver = new Solver(initial);

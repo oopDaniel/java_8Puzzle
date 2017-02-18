@@ -1,7 +1,7 @@
 /******************************************************************************
  *  Compilation:  javac Board.java
  *  Execution:    java Board
- *  Dependencies: none
+ *  Dependencies: Bag (or any other iterable type)
  *
  *  Current board
  *
@@ -16,80 +16,97 @@
  *
  ******************************************************************************/
 
-// import java.util.ArrayList;
 import edu.princeton.cs.algs4.Bag;
-// import edu.princeton.cs.algs4.StdOut;
+
 
 public class Board {
     private char[] tiles;
-    // private char[] goal;
-    // private int[][] cloneBlocks;
-    // private char cZero = (char) 0;
-    private int n;
-    private int totalLen;
-    private int indexOfZero;
+    private short n;
+    private short totalLen;
+    private short indexOfZero;
 
-    // construct a board from an n-by-n array of blocks
-    // (where blocks[i][j] = block in row i, column j)
+    /**
+     * construct a board from an n-by-n array of blocks
+     * (where blocks[i][j] = block in row i, column j)
+     *
+     */
     public Board(int[][] blocks) {
-        n        = blocks.length;
-        totalLen = n * n;
+        n        = (short) blocks.length;
+        totalLen = (short) (n * n);
         tiles    = new char[totalLen];
-        // goal     = new char[totalLen];
-        // cloneBlocks = new int[n][n];
 
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++) {
-                int index = i * n + j;
+        for (short i = 0; i < n; i++)
+            for (short j = 0; j < n; j++) {
+                short index = (short) (i * n + j);
                 tiles[ index ] = (char) blocks[i][j];
-                // goal[ index ] = (char) (index + 1);
-                // cloneBlocks[i][j] = blocks[i][j];
                 if (blocks[i][j] == 0) indexOfZero = index;
             }
 
-        // for (int i = 0; i < totalLen; ++i) {
-        //     StdOut.println((int)tiles[i]);
-        // }
-        // goal[totalLen - 1] = cZero;
-
     }
 
-    // board dimension n
+    /**
+     * Board dimension n
+     *
+     * @return integer of dimension
+     */
     public int dimension() { return n; }
 
-    // number of blocks out of place
+
+    /**
+     * The number of blocks in the wrong position,
+     * plus the number of moves made so far to get to the search node.
+     * Intuitively, a search node with a small number of blocks in the wrong position is close to the goal,
+     * and we prefer a search node that have been reached using a small number of moves.
+     *
+     * @return integer of hamming
+     */
     public int hamming() {
-        int count = 0;
-        for (int i = 0; i < totalLen - 1; ++i) {
-            if ((int) tiles[i] != i + 1) ++count;
+        short count = 0;
+        for (short i = 0; i < totalLen - 1; ++i) {
+            if ((short) tiles[i] != i + 1) ++count;
         }
         return count;
     }
 
-    // sum of Manhattan distances between blocks and goal
+    /**
+     * The sum of the Manhattan distances (sum of the vertical and horizontal distance)
+     * from the blocks to their goal positions, plus the number of moves made so far
+     * to get to the search node.
+     *
+     * @return sum of Manhattan distances between blocks and goal
+     */
     public int manhattan() {
-        int count = 0;
+        short count = 0;
         for (int i = 0; i < totalLen; ++i) {
-            if (i == indexOfZero || (int) tiles[i] == i + 1) continue;
+            if (i == indexOfZero || (short) tiles[i] == i + 1) continue;
 
-            int targetPos = (int) tiles[i] - 1;
-            int x = Math.abs(getX(i) - getX(targetPos));
-            int y = Math.abs(getY(i) - getY(targetPos));
+            int targetPos = tiles[i] - 1;
+            short x = (short) Math.abs(getX(i) - getX(targetPos));
+            short y = (short) Math.abs(getY(i) - getY(targetPos));
 
             count += (x + y);
         }
         return count;
     }
 
-    // is this board the goal board?
+    /**
+     * Is this board the goal board?
+     *
+     * @return boolean of whether the board is the goad
+     */
     public boolean isGoal() {
-        for (int i = 0; i < totalLen; ++i) {
+        for (short i = 0; i < totalLen; ++i) {
             if (i == totalLen - 1) break;
-            if ((int) tiles[i] != i + 1) return false;
+            if ((short) tiles[i] != i + 1) return false;
         }
         return true;
     }
 
+    /**
+     * a board that is obtained by exchanging any pair of blocks
+     *
+     * @return twin Board of the original one
+     */
     public Board twin() {
         int[][] blocks = get2dIntArr();
 
@@ -109,14 +126,15 @@ public class Board {
             blocks[0][1] = tmpA;
         }
 
-        // Board xx = new Board(blocks);
-        // System.out.println(toString());
-        // System.out.println(xx);
-
         return new Board(blocks);
     }
 
-    // does this board equal y?
+    /**
+     * does this board equal y?
+     *
+     * @param Board y - the other board to compare
+     * @return boolean of thether this board equal to y
+     */
     public boolean equals(Object y) {
         if (y == this) return true;
         if (y == null) return false;
@@ -125,17 +143,21 @@ public class Board {
         Board that = (Board) y;
 
         if (this.dimension() != that.dimension()) return false;
-        for (int i = 0; i < totalLen; ++i) {
+        for (short i = 0; i < totalLen; ++i) {
             if (this.tiles[i] != that.tiles[i]) return false;
         }
         return true;
     }
 
-    // all neighboring boards
+    /**
+     * all neighboring boards
+     *
+     * @return an Iterable<Board> of all neighboring boards
+     */
     public Iterable<Board> neighbors() {
         Bag<Board> neighbors = new Bag<Board>();
-        int x = getX(indexOfZero);
-        int y = getY(indexOfZero);
+        short x = (short) getX(indexOfZero);
+        short y = (short) getY(indexOfZero);
 
         if (x > 0)     neighbors.add(movedZero(y * n + x - 1));
         if (x < n - 1) neighbors.add(movedZero(y * n + x + 1));
@@ -145,12 +167,16 @@ public class Board {
         return neighbors;
     }
 
-    // string representation of this board (in the output format specified below)
+    /**
+     * string representation of this board
+     *
+     * @return string expression of board
+     */
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append(n + "\n");
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
+        for (short i = 0; i < n; i++) {
+            for (short j = 0; j < n; j++) {
                 s.append(String.format("%2d ", (int) tiles[ i * n + j ]));
             }
             s.append("\n");
@@ -158,9 +184,28 @@ public class Board {
         return s.toString();
     }
 
+    /**
+     * 1d index to 2d x-index
+     *
+     * @param integer of 1d index
+     * @return integer of x-index
+     */
     private int getX(int num) { return num % n; }
+
+    /**
+     * 1d index to 2d y-index
+     *
+     * @param integer of 1d index
+     * @return integer of y-index
+     */
     private int getY(int num) { return num / n; }
 
+    /**
+     * The new board after zero moved
+     *
+     * @param integer of index of where zero should move to
+     * @return board after the movement
+     */
     private Board movedZero(int to) {
         int[][] blocks = get2dIntArr();
         blocks[getY(indexOfZero)][getX(indexOfZero)] = blocks[getY(to)][getX(to)];
@@ -168,38 +213,17 @@ public class Board {
         return new Board(blocks);
     }
 
+    /**
+     * The original 2-d integer array for construction.
+     * Recalculate it to reduce space
+     *
+     * @return original integer array
+     */
     private int[][] get2dIntArr() {
         int[][] blocks = new int[n][n];
-        for (int i = 0; i < n; ++i)
-            for (int j = 0; j < n; ++j)
+        for (short i = 0; i < n; ++i)
+            for (short j = 0; j < n; ++j)
                 blocks[i][j] = (int) tiles[ i * n + j ];
         return blocks;
     }
-
-
-    // unit tests (not graded)
-    // public static void main(String[] args) {
-    //     In in = new In(args[0]);
-    //     int n = in.readInt();
-    //     int[][] blocks = new int[n][n];
-    //     for (int i = 0; i < n; i++)
-    //         for (int j = 0; j < n; j++)
-    //             blocks[i][j] = in.readInt();
-    //     Board initial = new Board(blocks);
-    //     Board aa = initial.twin();
-    //     Board bb = aa.twin();
-
-    //     StdOut.println(initial.toString());
-    //     StdOut.println(aa.toString());
-    //     StdOut.println(bb.toString());
-
-    //     // for (Board ne : initial.neighbors()) {
-    //     //     StdOut.println(ne.toString());
-    //     // }
-
-
-    //     StdOut.println(aa.equals(bb));
-    //     StdOut.println(initial.equals(bb));
-
-    // }
 }
