@@ -50,7 +50,7 @@ public class Board {
 
     public Board(char[] blocks) {
         totalLen = blocks.length;
-        n        = (int)Math.sqrt(totalLen);
+        n        = (int) Math.sqrt(totalLen);
         tiles    = new char[totalLen];
         goal     = new char[totalLen];
         for (int i = 0; i < totalLen; i++) {
