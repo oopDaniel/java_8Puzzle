@@ -17,14 +17,14 @@
  ******************************************************************************/
 
 // import java.util.ArrayList;
-import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Bag;
 // import edu.princeton.cs.algs4.StdOut;
 
 public class Board {
     private char[] tiles;
-    private char[] goal;
+    // private char[] goal;
     // private int[][] cloneBlocks;
-    private char cZero = (char) 0;
+    // private char cZero = (char) 0;
     private int n;
     private int totalLen;
     private int indexOfZero;
@@ -35,19 +35,22 @@ public class Board {
         n        = blocks.length;
         totalLen = n * n;
         tiles    = new char[totalLen];
-        goal     = new char[totalLen];
+        // goal     = new char[totalLen];
         // cloneBlocks = new int[n][n];
 
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++) {
                 int index = i * n + j;
                 tiles[ index ] = (char) blocks[i][j];
-                goal[ index ] = (char) (index + 1);
+                // goal[ index ] = (char) (index + 1);
                 // cloneBlocks[i][j] = blocks[i][j];
                 if (blocks[i][j] == 0) indexOfZero = index;
             }
 
-        goal[totalLen - 1] = cZero;
+        // for (int i = 0; i < totalLen; ++i) {
+        //     StdOut.println((int)tiles[i]);
+        // }
+        // goal[totalLen - 1] = cZero;
 
     }
 
@@ -57,9 +60,8 @@ public class Board {
     // number of blocks out of place
     public int hamming() {
         int count = 0;
-        for (int i = 0; i < totalLen; ++i) {
-            if (i == indexOfZero) continue;
-            if (tiles[i] != goal[i]) ++count;
+        for (int i = 0; i < totalLen - 1; ++i) {
+            if ((int) tiles[i] != i + 1) ++count;
         }
         return count;
     }
@@ -68,13 +70,13 @@ public class Board {
     public int manhattan() {
         int count = 0;
         for (int i = 0; i < totalLen; ++i) {
-            if (i == indexOfZero || tiles[i] == goal[i]) continue;
+            if (i == indexOfZero || (int) tiles[i] == i + 1) continue;
 
             int targetPos = (int) tiles[i] - 1;
             int x = Math.abs(getX(i) - getX(targetPos));
             int y = Math.abs(getY(i) - getY(targetPos));
 
-            count += x + y;
+            count += (x + y);
         }
         return count;
     }
@@ -82,7 +84,8 @@ public class Board {
     // is this board the goal board?
     public boolean isGoal() {
         for (int i = 0; i < totalLen; ++i) {
-            if (tiles[i] != goal[i]) return false;
+            if (i == totalLen - 1) break;
+            if ((int) tiles[i] != i + 1) return false;
         }
         return true;
     }
@@ -90,25 +93,28 @@ public class Board {
     public Board twin() {
         int[][] blocks = get2dIntArr();
 
-        int x = 0, y = n - 1;
+        int tmpA = blocks[0][0];
+        int tmpB = blocks[0][1];
 
-        if      (blocks[0][x]     == 0) ++x;
-        else if (blocks[n - 1][y] == 0) --y;
+        if (tmpA == 0) {
+            tmpA         = blocks[1][0];
+            blocks[1][0] = tmpB;
+            blocks[0][1] = tmpA;
+        }
+        else if (tmpB == 0) {
+            blocks[0][0] = blocks[1][1];
+            blocks[1][1] = tmpA;
+        } else {
+            blocks[0][0] = tmpB;
+            blocks[0][1] = tmpA;
+        }
 
-        int tmp          = blocks[0][x];
-        blocks[0][x]     = blocks[n - 1][y];
-        blocks[n - 1][y] = tmp;
+        // Board xx = new Board(blocks);
+        // System.out.println(toString());
+        // System.out.println(xx);
 
         return new Board(blocks);
     }
-
-    private Board movedZero(int to) {
-        int[][] blocks = get2dIntArr();
-        blocks[getY(indexOfZero)][getX(indexOfZero)] = blocks[getY(to)][getX(to)];
-        blocks[getY(to)][getX(to)] = 0;
-        return new Board(blocks);
-    }
-
 
     // does this board equal y?
     public boolean equals(Object y) {
@@ -127,14 +133,14 @@ public class Board {
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        Queue<Board> neighbors = new Queue<Board>();
+        Bag<Board> neighbors = new Bag<Board>();
         int x = getX(indexOfZero);
         int y = getY(indexOfZero);
 
-        if (x > 0)     neighbors.enqueue(movedZero(y * n + x - 1));
-        if (x < n - 1) neighbors.enqueue(movedZero(y * n + x + 1));
-        if (y > 0)     neighbors.enqueue(movedZero((y - 1) * n + x));
-        if (y < n - 1) neighbors.enqueue(movedZero((y + 1) * n + x));
+        if (x > 0)     neighbors.add(movedZero(y * n + x - 1));
+        if (x < n - 1) neighbors.add(movedZero(y * n + x + 1));
+        if (y > 0)     neighbors.add(movedZero((y - 1) * n + x));
+        if (y < n - 1) neighbors.add(movedZero((y + 1) * n + x));
 
         return neighbors;
     }
@@ -154,6 +160,13 @@ public class Board {
 
     private int getX(int num) { return num % n; }
     private int getY(int num) { return num / n; }
+
+    private Board movedZero(int to) {
+        int[][] blocks = get2dIntArr();
+        blocks[getY(indexOfZero)][getX(indexOfZero)] = blocks[getY(to)][getX(to)];
+        blocks[getY(to)][getX(to)] = 0;
+        return new Board(blocks);
+    }
 
     private int[][] get2dIntArr() {
         int[][] blocks = new int[n][n];

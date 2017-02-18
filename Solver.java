@@ -8,6 +8,7 @@
  *
  ******************************************************************************/
 
+import java.util.HashMap;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.MinPQ;
@@ -17,10 +18,12 @@ public class Solver {
     private int moves;
     private MinPQ<SearchNode> pq = new MinPQ<SearchNode>();
     private SearchNode result;
+    // private HashMap<String, Integer> manhattanMap = new HashMap<String, Integer>();
 
     private class SearchNode implements Comparable<SearchNode> {
         private int moves;
-        private int priority;
+        private int m;
+        // private int priority;
         private boolean isTwin;
         private Board board;
         private SearchNode parent;
@@ -30,21 +33,44 @@ public class Solver {
             this.parent = parent;
             this.moves  = parent == null ? 0 : parent.moves + 1;
             this.isTwin = isTwin;
-            priority = board.manhattan() + moves;
+
+            this.m = board.manhattan();
+
+            // String id = board.toString();
+            // Integer tmp = manhattanMap.get(id);
+            // if (tmp == null) {
+            //     this.m = board.manhattan();
+            //     manhattanMap.put(id, this.m);
+            // } else {
+            //     this.m = tmp;
+            // }
+            // StdOut.println("this.m: " + this.m);
         }
 
-        // public void show() {
-        //     StdOut.println(" - moves: " + moves + ", manhattan: "+ board.manhattan() + ", priority: " + priority);
-        // }
+        public void show() {
+            StdOut.println(" - moves: " + moves + ", manhattan: "+ m + ", priority: " + (moves+m));
+        }
 
         public boolean isSolved() { return board.isGoal(); }
 
         public int compareTo(SearchNode that) {
+            int thisMH = this.board.manhattan();
+            int thatMH = that.board.manhattan();
+            // , thatMH;
 
-            int pDiff = this.priority - that.priority;
+            // String id = that.board.toString();
+            // Integer tmp = manhattanMap.get(id);
+            // if (tmp == null) {
+            //     thatMH = that.board.manhattan();
+            //     manhattanMap.put(id, thatMH);
+            // } else {
+            //     thatMH = tmp;
+            // }
+
+            int pDiff = thisMH + this.moves - thatMH - that.moves;
             if (pDiff != 0) return pDiff;
 
-            int mDiff = that.moves - this.moves;
+            int mDiff = thisMH - thatMH;
             if (mDiff != 0) return mDiff;
 
             return this.board.hamming() - that.board.hamming();
@@ -57,7 +83,7 @@ public class Solver {
     public Solver(Board initial) {
         if (initial == null) throw new java.lang.NullPointerException();
 
-        // moves = 0;
+        moves = 0;
         Board prev;
         SearchNode curr = new SearchNode(initial, null, false);
         // SearchNode twin = new SearchNode(initial.twin(), null, true);
@@ -70,10 +96,16 @@ public class Solver {
             prev = curr.board;
             curr = pq.delMin();
 
-            // StdOut.println( " curr: " + curr.board());
+            // StdOut.println( " curr: " + curr.board);
+            // curr.show();
+            // for (SearchNode qq: pq) {
+            //     qq.show();
+            //     // StdOut.println( " qq: " + qq.board);
+            // }
             // curr.show();
 
             // ++moves;
+            // if (moves > 25) break;
 
             for (Board neighbor: curr.board.neighbors()) {
                 if (!prev.equals(neighbor)) {
@@ -118,6 +150,8 @@ public class Solver {
             for (int j = 0; j < n; j++)
                 blocks[i][j] = in.readInt();
         Board initial = new Board(blocks);
+
+        // int id = initial.toString().hashCode();
 
         // solve the puzzle
         Solver solver = new Solver(initial);
