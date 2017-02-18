@@ -82,13 +82,11 @@ public class Board {
     public int manhattan() {
         int count = 0;
         for (int i = 0; i < totalLen; ++i) {
-            if (i == indexOfZero || tiles[i] != goal[i]) continue;
+            if (i == indexOfZero || tiles[i] == goal[i]) continue;
 
-            int offset = 0;
-            while (goal[offset] != tiles[i]) offset++;
-
-            int x = Math.abs(i / n - offset / n);
-            int y = Math.abs(i % n - offset % n);
+            int targetPos = (int) tiles[i] - 1;
+            int x = Math.abs(getX(i) - getX(targetPos));
+            int y = Math.abs(getY(i) - getY(targetPos));
 
             count += x + y;
         }
