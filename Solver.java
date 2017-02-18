@@ -83,7 +83,7 @@ public Solver(Board initial) {
         curr = pq.delMin();
 
         // StdOut.println( " curr: " + curr.board());
-
+        // curr.show();
 
         // ++moves;
 

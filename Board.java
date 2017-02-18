@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class Board {
     private char[] tiles;
     private char[] goal;
+    // private int[][] cloneBlocks;
     private char cZero = (char) 0;
     private int n;
     private int totalLen;
@@ -35,34 +36,19 @@ public class Board {
         totalLen = n * n;
         tiles    = new char[totalLen];
         goal     = new char[totalLen];
+        // cloneBlocks = new int[n][n];
 
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++) {
                 int index = i * n + j;
                 tiles[ index ] = (char) blocks[i][j];
                 goal[ index ] = (char) (index + 1);
+                // cloneBlocks[i][j] = blocks[i][j];
                 if (blocks[i][j] == 0) indexOfZero = index;
             }
 
         goal[totalLen - 1] = cZero;
 
-        // for (int i = 0; i < totalLen; ++i) {
-        //     StdOut.println((int)tiles[i] + " " + (int)goal[i]);
-        // }
-        // StdOut.println("indexOfZero" + indexOfZero + goal[totalLen - 1]);
-    }
-
-    public Board(char[] blocks) {
-        totalLen = blocks.length;
-        n        = (int) Math.sqrt(totalLen);
-        tiles    = new char[totalLen];
-        goal     = new char[totalLen];
-        for (int i = 0; i < totalLen; i++) {
-            tiles[i] = blocks[i];
-            goal[i]  = (char) (i + 1);
-            if (blocks[i] == cZero) indexOfZero = i;
-        }
-        goal[totalLen - 1] = cZero;
     }
 
     // board dimension n
@@ -141,15 +127,20 @@ public class Board {
     // }
 
     public Board twin() {
-        char[] blocks = tiles.clone();
+        int[][] blocks = getIntArr();
+        // int[][] blocks = new int[n][n];
+        // for (int i = 0; i < n; ++i)
+        //     for (int j = 0; j < n; ++j)
+        //         blocks[i][j] = (int) tiles[ i * n + j ];
+
         int x = 0, y = 1;
 
-        if      (blocks[x] == cZero) x = y + 1;
-        else if (blocks[y] == cZero) y = y + 1;
+        if      (blocks[0][x] == 0) x = y + 1;
+        else if (blocks[0][y] == 0) y = y + 1;
 
-        char c = blocks[x];
-        blocks[x] = blocks[y];
-        blocks[y] = c;
+        int tmp = blocks[0][x];
+        blocks[0][x] = blocks[0][y];
+        blocks[0][y] = tmp;
 
         return new Board(blocks);
     }
@@ -158,10 +149,19 @@ public class Board {
     private int getY(int num) { return num / n; }
 
     private Board movedZero(int to) {
-        char[] blocks = tiles.clone();
-        blocks[indexOfZero] = blocks[to];
-        blocks[to] = cZero;
+        int[][] blocks = getIntArr();
+        // char[] blocks = tiles.clone();
+        blocks[getY(indexOfZero)][getX(indexOfZero)] = blocks[getY(to)][getX(to)];
+        blocks[getY(to)][getX(to)] = 0;
         return new Board(blocks);
+    }
+
+    private int[][] getIntArr() {
+        int[][] blocks = new int[n][n];
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < n; ++j)
+                blocks[i][j] = (int) tiles[ i * n + j ];
+        return blocks;
     }
 
     // does this board equal y?
