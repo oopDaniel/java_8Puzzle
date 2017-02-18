@@ -23,7 +23,7 @@ public class Board {
     private char[] tiles;
     private short n;
     private short totalLen;
-    private short indexOfZero;
+    private int indexOfZero;
 
     /**
      * construct a board from an n-by-n array of blocks
@@ -35,9 +35,9 @@ public class Board {
         totalLen = (short) (n * n);
         tiles    = new char[totalLen];
 
-        for (short i = 0; i < n; i++)
-            for (short j = 0; j < n; j++) {
-                short index = (short) (i * n + j);
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++) {
+                int index = i * n + j;
                 tiles[ index ] = (char) blocks[i][j];
                 if (blocks[i][j] == 0) indexOfZero = index;
             }
@@ -62,8 +62,8 @@ public class Board {
      */
     public int hamming() {
         short count = 0;
-        for (short i = 0; i < totalLen - 1; ++i) {
-            if ((short) tiles[i] != i + 1) ++count;
+        for (int i = 0; i < totalLen - 1; ++i) {
+            if ((int) tiles[i] != i + 1) ++count;
         }
         return count;
     }
@@ -76,13 +76,13 @@ public class Board {
      * @return sum of Manhattan distances between blocks and goal
      */
     public int manhattan() {
-        short count = 0;
+        int count = 0;
         for (int i = 0; i < totalLen; ++i) {
-            if (i == indexOfZero || (short) tiles[i] == i + 1) continue;
+            if (i == indexOfZero || tiles[i] == i + 1) continue;
 
             int targetPos = tiles[i] - 1;
-            short x = (short) Math.abs(getX(i) - getX(targetPos));
-            short y = (short) Math.abs(getY(i) - getY(targetPos));
+            int x = Math.abs(getX(i) - getX(targetPos));
+            int y = Math.abs(getY(i) - getY(targetPos));
 
             count += (x + y);
         }
@@ -95,9 +95,9 @@ public class Board {
      * @return boolean of whether the board is the goad
      */
     public boolean isGoal() {
-        for (short i = 0; i < totalLen; ++i) {
+        for (int i = 0; i < totalLen; ++i) {
             if (i == totalLen - 1) break;
-            if ((short) tiles[i] != i + 1) return false;
+            if ((int) tiles[i] != i + 1) return false;
         }
         return true;
     }
@@ -143,7 +143,7 @@ public class Board {
         Board that = (Board) y;
 
         if (this.dimension() != that.dimension()) return false;
-        for (short i = 0; i < totalLen; ++i) {
+        for (int i = 0; i < totalLen; ++i) {
             if (this.tiles[i] != that.tiles[i]) return false;
         }
         return true;
@@ -175,8 +175,8 @@ public class Board {
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append(n + "\n");
-        for (short i = 0; i < n; i++) {
-            for (short j = 0; j < n; j++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 s.append(String.format("%2d ", (int) tiles[ i * n + j ]));
             }
             s.append("\n");
@@ -221,8 +221,8 @@ public class Board {
      */
     private int[][] get2dIntArr() {
         int[][] blocks = new int[n][n];
-        for (short i = 0; i < n; ++i)
-            for (short j = 0; j < n; ++j)
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < n; ++j)
                 blocks[i][j] = (int) tiles[ i * n + j ];
         return blocks;
     }
