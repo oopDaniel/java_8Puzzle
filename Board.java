@@ -87,82 +87,28 @@ public class Board {
         return true;
     }
 
-    // a board that is obtained by exchanging any pair of blocks
-    // public Board twin() {
-    //     // int[][] blocks = new int[n][n];
-    //     char[] blocks = new char[totalLen];
-    //     int firstIndex = -1, secondIndex = -1;
-    //     char c;
-
-    //     for (int i = 0; i < totalLen; ++i) {
-    //         c = tiles[i];
-    //         boolean isNotZero = i != indexOfZero;
-
-    //         // just convert
-    //         if (secondIndex != -1) {
-    //             // blocks[getY(i)][getX(i)] = Character.getNumericValue(c);
-    //             blocks[i] = c;
-    //         }
-    //         else if (firstIndex > -1 && isNotZero) {
-    //             secondIndex = 0;  // so will always do conversion after then
-    //             char prevC = tiles[firstIndex];
-    //             // blocks[getY(i)][getX(i)] = Character.getNumericValue(prevC);
-    //             // blocks[getY(a)][getX(a)] = Character.getNumericValue(c);
-
-    //             blocks[firstIndex] = c;
-    //             blocks[i] = prevC;
-    //         }
-    //         // original case, begin without '0'
-    //         else if (firstIndex == secondIndex && isNotZero) {
-    //             firstIndex = i;
-    //         }
-    //         // original case, begin with '0'
-    //         else {
-    //             // blocks[0][0] = 0;
-    //             blocks[0] = cZero;
-    //         }
-    //     }
-
-    //     return new Board(blocks);
-    // }
-
     public Board twin() {
-        int[][] blocks = getIntArr();
-        // int[][] blocks = new int[n][n];
-        // for (int i = 0; i < n; ++i)
-        //     for (int j = 0; j < n; ++j)
-        //         blocks[i][j] = (int) tiles[ i * n + j ];
+        int[][] blocks = get2dIntArr();
 
-        int x = 0, y = 1;
+        int x = 0, y = n - 1;
 
-        if      (blocks[0][x] == 0) x = y + 1;
-        else if (blocks[0][y] == 0) y = y + 1;
+        if      (blocks[0][x]     == 0) ++x;
+        else if (blocks[n - 1][y] == 0) --y;
 
-        int tmp = blocks[0][x];
-        blocks[0][x] = blocks[0][y];
-        blocks[0][y] = tmp;
+        int tmp          = blocks[0][x];
+        blocks[0][x]     = blocks[n - 1][y];
+        blocks[n - 1][y] = tmp;
 
         return new Board(blocks);
     }
 
-    private int getX(int num) { return num % n; }
-    private int getY(int num) { return num / n; }
-
     private Board movedZero(int to) {
-        int[][] blocks = getIntArr();
-        // char[] blocks = tiles.clone();
+        int[][] blocks = get2dIntArr();
         blocks[getY(indexOfZero)][getX(indexOfZero)] = blocks[getY(to)][getX(to)];
         blocks[getY(to)][getX(to)] = 0;
         return new Board(blocks);
     }
 
-    private int[][] getIntArr() {
-        int[][] blocks = new int[n][n];
-        for (int i = 0; i < n; ++i)
-            for (int j = 0; j < n; ++j)
-                blocks[i][j] = (int) tiles[ i * n + j ];
-        return blocks;
-    }
 
     // does this board equal y?
     public boolean equals(Object y) {
@@ -205,6 +151,18 @@ public class Board {
         }
         return s.toString();
     }
+
+    private int getX(int num) { return num % n; }
+    private int getY(int num) { return num / n; }
+
+    private int[][] get2dIntArr() {
+        int[][] blocks = new int[n][n];
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < n; ++j)
+                blocks[i][j] = (int) tiles[ i * n + j ];
+        return blocks;
+    }
+
 
     // unit tests (not graded)
     // public static void main(String[] args) {

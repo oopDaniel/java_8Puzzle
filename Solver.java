@@ -94,7 +94,7 @@ public Solver(Board initial) {
         }
     }
 
-    moves = curr.isTwin() ? -1 : curr.moves();
+    moves = curr.moves();
     result = curr;
 }
 
