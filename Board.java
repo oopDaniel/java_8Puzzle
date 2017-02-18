@@ -11,6 +11,9 @@
  *    4  2  5      4  2  5
  *    7  8  6      7     1
  *
+ *
+ *  Time complexity: All methods with O(n^2) at least
+ *
  ******************************************************************************/
 
 import java.util.ArrayList;
@@ -20,6 +23,7 @@ import edu.princeton.cs.algs4.StdOut;
 public class Board {
     private char[] tiles;
     private char[] goal;
+    private char cZero = (char) 0;
     private int n;
     private int totalLen;
     private int indexOfZero;
@@ -35,17 +39,17 @@ public class Board {
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++) {
                 int index = i * n + j;
-                tiles[ index ] = Integer.toString(blocks[i][j]).charAt(0);
-                goal[ index ] = Integer.toString(index + 1).charAt(0);
+                tiles[ index ] = (char) blocks[i][j];
+                goal[ index ] = (char) (index + 1);
                 if (blocks[i][j] == 0) indexOfZero = index;
             }
 
-        goal[totalLen - 1] = '0';
+        goal[totalLen - 1] = cZero;
 
         // for (int i = 0; i < totalLen; ++i) {
-        //     boolean same = tiles[i] == '0';
-        //     StdOut.println(tiles[i] + " " + goal[i] + " " + same);
+        //     StdOut.println((int)tiles[i] + " " + (int)goal[i]);
         // }
+        // StdOut.println("indexOfZero" + indexOfZero + goal[totalLen - 1]);
     }
 
     public Board(char[] blocks) {
@@ -55,9 +59,10 @@ public class Board {
         goal     = new char[totalLen];
         for (int i = 0; i < totalLen; i++) {
             tiles[i] = blocks[i];
-            goal[i]  = Integer.toString(i + 1).charAt(0);
+            goal[i]  = (char) (i + 1);
+            if (blocks[i] == cZero) indexOfZero = i;
         }
-        goal[totalLen - 1] = '0';
+        goal[totalLen - 1] = cZero;
     }
 
     // board dimension n
@@ -130,7 +135,7 @@ public class Board {
             // original case, begin with '0'
             else {
                 // blocks[0][0] = 0;
-                blocks[0] = '0';
+                blocks[0] = cZero;
             }
         }
 
@@ -143,7 +148,7 @@ public class Board {
     private Board movedZero(int to) {
         char[] blocks = tiles.clone();
         blocks[indexOfZero] = blocks[to];
-        blocks[to] = '0';
+        blocks[to] = cZero;
         return new Board(blocks);
     }
 
@@ -154,9 +159,12 @@ public class Board {
         if (y.getClass() != this.getClass()) return false;
 
         Board that = (Board) y;
-        return (this.dimension() == that.dimension())
-            && (this.hamming() == that.hamming())
-            && (this.manhattan() == that.manhattan());
+
+        if (this.dimension() != that.dimension()) return false;
+        for (int i = 0; i < totalLen; ++i) {
+            if (this.tiles[i] != that.tiles[i]) return false;
+        }
+        return true;
     }
 
     // all neighboring boards
@@ -165,10 +173,10 @@ public class Board {
         int x = getX(indexOfZero);
         int y = getY(indexOfZero);
 
-        if (x > 0) neighbors.add(movedZero(y * n + x - 1));
-        if (x < n) neighbors.add(movedZero(y * n + x + 1));
-        if (y > 0) neighbors.add(movedZero((y - 1) * n + x));
-        if (y < n) neighbors.add(movedZero((y + 1) * n + x));
+        if (x > 0)     neighbors.add(movedZero(y * n + x - 1));
+        if (x < n - 1) neighbors.add(movedZero(y * n + x + 1));
+        if (y > 0)     neighbors.add(movedZero((y - 1) * n + x));
+        if (y < n - 1) neighbors.add(movedZero((y + 1) * n + x));
 
         return neighbors;
     }
@@ -179,7 +187,7 @@ public class Board {
         s.append(n + "\n");
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                s.append(String.format("%2c ", tiles[ i * n + j ]));
+                s.append(String.format("%2d ", (int) tiles[ i * n + j ]));
             }
             s.append("\n");
         }
@@ -196,14 +204,19 @@ public class Board {
     //             blocks[i][j] = in.readInt();
     //     Board initial = new Board(blocks);
     //     Board aa = initial.twin();
+    //     Board bb = aa.twin();
 
     //     StdOut.println(initial.toString());
+    //     StdOut.println(aa.toString());
+    //     StdOut.println(bb.toString());
 
-    //     for (Board ne : initial.neighbors()) {
-    //         StdOut.println(ne.toString());
-    //     }
+    //     // for (Board ne : initial.neighbors()) {
+    //     //     StdOut.println(ne.toString());
+    //     // }
 
-    //     // StdOut.println(aa.toString());
+
+    //     StdOut.println(aa.equals(bb));
+    //     StdOut.println(initial.equals(bb));
 
     // }
 }
