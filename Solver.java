@@ -8,35 +8,51 @@
  *
  ******************************************************************************/
 
-import java.util.ArrayList;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.MinPQ;
+import edu.princeton.cs.algs4.Stack;
 
 
 public class Solver {
     private int moves;
-    private MinPQ<OrderedBoard> pq = new MinPQ<OrderedBoard>();
-    private ArrayList<Board> q = new ArrayList<Board>();
+    private MinPQ<SearchNode> pq = new MinPQ<SearchNode>();
+    private SearchNode result;
 
-    private class OrderedBoard implements Comparable<OrderedBoard> {
-      private int moves;
-      private int priority;
-      private Board board;
+    private class SearchNode implements Comparable<SearchNode> {
+    private int moves;
+    private int priority;
+    private boolean isTwin = false;
+    private Board board;
+    private SearchNode parent;
 
-      public OrderedBoard(Board boardIn, int currMove) {
-        board    = boardIn;
-        moves    = currMove;
-        priority = boardIn.manhattan() + currMove;
-        StdOut.println(" - moves: " + moves + ", manhattan: "+ boardIn.manhattan() + " priority: " + priority);
-      }
-      public int moves() { return moves; }
-      public int priority() { return priority; }
-      public boolean isSolved() { return board.isGoal(); }
-      public Board board() { return board; }
-      public Iterable<Board> neighbors() { return board.neighbors(); }
+    public SearchNode(Board board, SearchNode parent) {
+        this.board  = board;
+        this.parent = parent;
+        this.moves  = parent == null ? 0 : parent.moves + 1;
+        priority = board.manhattan() + moves;
+    }
 
-      public int compareTo(OrderedBoard that) {
+    public SearchNode(Board board, SearchNode parent, boolean isTwin) {
+        this.board  = board;
+        this.parent = parent;
+        this.moves  = parent == null ? 0 : parent.moves + 1;
+        this.isTwin = isTwin;
+        priority = board.manhattan() + moves;
+    }
+
+    // public void show() {
+    //     StdOut.println(" - moves: " + moves + ", manhattan: "+ board.manhattan() + ", priority: " + priority);
+    // }
+
+    public SearchNode parent() { return parent; }
+    public int moves() { return moves; }
+    public boolean isTwin() { return isTwin; }
+    public boolean isSolved() { return board.isGoal(); }
+    public Board board() { return board; }
+    public Iterable<Board> neighbors() { return board.neighbors(); }
+
+    public int compareTo(SearchNode that) {
         int pDiff = this.priority - that.priority;
         if (pDiff != 0) return pDiff;
 
@@ -44,65 +60,76 @@ public class Solver {
         if (mDiff != 0) return mDiff;
 
         return this.board.hamming() - that.board.hamming();
-      }
-
-      public String toString() { return board.toString(); }
     }
 
+    public String toString() { return board.toString(); }
+}
+
     // find a solution to the initial board (using the A* algorithm)
-    public Solver(Board initial) {
-      if (initial == null) throw new java.lang.NullPointerException();
+public Solver(Board initial) {
+    if (initial == null) throw new java.lang.NullPointerException();
 
-      Board prev;
-      OrderedBoard curr = new OrderedBoard(initial, moves);
-      moves = 0;
-      pq.insert(curr);
+    // moves = 0;
+    Board prev;
+    SearchNode curr = new SearchNode(initial, null);
+    SearchNode twin = new SearchNode(initial.twin(), null, true);
+    pq.insert(curr);
+    pq.insert(twin);
 
-      while (!curr.isSolved() && moves < 20) {
+    while (!curr.isSolved()) {
+        // StdOut.println("~~~~ Step " + moves);
 
         prev = curr.board();
         curr = pq.delMin();
 
-        q.add(curr.board());
-        StdOut.println("Step " + moves + ", prev: " + prev);
+        // StdOut.println( " curr: " + curr.board());
 
-        ++moves;
 
-        for (Board b: curr.neighbors()) {
-          if (!prev.equals(b)) {
-            pq.insert(new OrderedBoard(b, moves));
-          }
+        // ++moves;
+
+        for (Board neighbor: curr.neighbors()) {
+            if (!prev.equals(neighbor)) {
+                pq.insert(new SearchNode(neighbor, curr, curr.isTwin()));
+            }
         }
-      }
-
-      // Remove the pre-add move
-      --moves;
     }
+
+    moves = curr.isTwin() ? -1 : curr.moves();
+    result = curr;
+}
 
     // is the initial board solvable?
-    public boolean isSolvable() { return moves > 0; }
+public boolean isSolvable() { return moves > 0; }
 
     // min number of moves to solve initial board; -1 if unsolvable
-    public int moves() {
-      if (!isSolvable()) return -1;
-      return moves;
-    }
+public int moves() {
+  if (!isSolvable()) return -1;
+  return moves;
+}
 
     // sequence of boards in a shortest solution; null if unsolvable
-    public Iterable<Board> solution() {
-      if (!isSolvable()) return null;
-      return q;
-    }
+public Iterable<Board> solution() {
+  if (!isSolvable()) return null;
 
-    public static void main(String[] args) {
+  Stack<Board> s = new Stack<Board>();
 
-        // create initial board from file
-        In in = new In(args[0]);
-        int n = in.readInt();
-        int[][] blocks = new int[n][n];
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                blocks[i][j] = in.readInt();
+  while (result != null) {
+    s.push(result.board());
+    result = result.parent();
+  }
+
+  return s;
+}
+
+public static void main(String[] args) {
+
+    // create initial board from file
+    In in = new In(args[0]);
+    int n = in.readInt();
+    int[][] blocks = new int[n][n];
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            blocks[i][j] = in.readInt();
         Board initial = new Board(blocks);
 
         // solve the puzzle
