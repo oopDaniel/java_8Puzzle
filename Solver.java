@@ -71,9 +71,9 @@ public class Solver {
         // moves = 0;
         Board prev;
         SearchNode curr = new SearchNode(initial, null);
-        SearchNode twin = new SearchNode(initial.twin(), null, true);
+        // SearchNode twin = new SearchNode(initial.twin(), null, true);
         pq.insert(curr);
-        pq.insert(twin);
+        pq.insert(new SearchNode(initial.twin(), null, true));
 
         while (!curr.isSolved()) {
             // StdOut.println("~~~~ Step " + moves);
@@ -93,15 +93,16 @@ public class Solver {
             }
         }
 
-        moves = curr.moves();
+        moves = curr.isTwin() ? -1 : curr.moves();
         result = curr;
+
     }
 
     // is the initial board solvable?
-    public boolean isSolvable() { return moves > 0; }
+    public boolean isSolvable() { return moves != -1; }
 
     // min number of moves to solve initial board; -1 if unsolvable
-    public int moves() { return isSolvable() ? moves : -1; }
+    public int moves() { return moves; }
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
@@ -126,7 +127,7 @@ public class Solver {
         int[][] blocks = new int[n][n];
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
-                blocks[i][j]         in.readInt();
+                blocks[i][j] = in.readInt();
         Board initial = new Board(blocks);
 
         // solve the puzzle
